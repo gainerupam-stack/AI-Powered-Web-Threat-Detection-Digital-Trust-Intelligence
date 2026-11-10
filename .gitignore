@@ -22,3 +22,8 @@ venv/
 # Python cache files
 __pycache__/
 *.py[cod]
+.env
+.venv/
+__pycache__/
+*.pyc
+.vscode/
