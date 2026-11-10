@@ -1,37 +1,43 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-.venv/
-venv/
-
-# Environment variables
-.env
-
-# Node.js
-node_modules/
-dist/
-# Environment variables and secrets
-.env
-*.env
-
-# Python virtual environments
-.venv/
-venv/
 
 # Python cache files
 __pycache__/
 *.py[cod]
-.env
+*.pyo
+
+# Python virtual environments
 .venv/
-__pycache__/
-*.pyc
+venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+*.env
+!.env.example
+
+# Node.js
+node_modules/
+dist/
+build/
+
+# IDE and editor
 .vscode/
-.env
-.venv/
-__pycache__/
+.idea/
+
+# Testing and coverage
 .pytest_cache/
-*.py[cod]
+.coverage
+htmlcov/
+
+# Database files
 *.db
+*.sqlite
+*.sqlite3
+
+# Generated files and caches
 artifacts/
 cache/
+
+# OS files
+.DS_Store
+Thumbs.db
