@@ -27,3 +27,11 @@ __pycache__/
 __pycache__/
 *.pyc
 .vscode/
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.db
+artifacts/
+cache/
