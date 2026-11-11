@@ -12,8 +12,8 @@ import {
 } from 'recharts'
 import './App.css'
 
-const API_BASE = 'http://127.0.0.1:8000'
-
+const API_BASE =
+  import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000'
 const navItems = [
   { name: 'Dashboard', icon: LayoutDashboard },
   { name: 'URL Scanner', icon: Globe },
@@ -673,23 +673,23 @@ function App() {
   )
 
   const currentPage = () => {
-    switch (page) {
-      case 'URL Scanner':
-        return <URLScanner />
-      case 'Message Analyzer':
-        return <MessageAnalyzer />
-      case 'Investigation Reports':
-        return <ReportsPage />
-      case 'Threat Intelligence':
-        return <ThreatPage />
-      case 'Scan History':
-        return <HistoryPage />
-      case 'Blockchain Verification':
-        return <BlockchainPage />
-      default:
-        return <Dashboard />
-    }
+  switch (page) {
+    case 'URL Scanner':
+      return URLScanner()
+    case 'Message Analyzer':
+      return MessageAnalyzer()
+    case 'Investigation Reports':
+      return ReportsPage()
+    case 'Threat Intelligence':
+      return ThreatPage()
+    case 'Scan History':
+      return HistoryPage()
+    case 'Blockchain Verification':
+      return BlockchainPage()
+    default:
+      return Dashboard()
   }
+}
 
   return (
     <div className="app-shell">
