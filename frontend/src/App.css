@@ -170,3 +170,262 @@ footer span { padding: 0 6px; color: #52617b; }
   .page-heading p { max-width: 250px; line-height: 1.6; }
 }
 
+
+/* Message Analyzer detailed report */
+
+.message-report {
+  overflow: hidden;
+}
+
+.report-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.report-info-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 16px;
+  background: #151e2d;
+  border: 1px solid #293548;
+  border-radius: 9px;
+  min-width: 0;
+}
+
+.report-info-card > span:first-child {
+  font-size: 11px;
+  color: #91a0b7;
+}
+
+.report-info-card strong {
+  font-size: 13px;
+  color: #e9edf7;
+  overflow-wrap: anywhere;
+  text-transform: capitalize;
+}
+
+.report-section {
+  padding-top: 23px;
+  margin-top: 23px;
+  border-top: 1px solid #283447;
+}
+
+.report-section h3 {
+  margin-bottom: 15px;
+  font-size: 13px;
+  color: #e9edf7;
+}
+
+.report-description {
+  color: #b7c4d7;
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 0;
+}
+
+.indicator-card {
+  padding: 16px;
+  margin-top: 10px;
+  background: #151e2d;
+  border: 1px solid #2b374b;
+  border-radius: 9px;
+}
+
+.indicator-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.indicator-heading strong {
+  font-size: 12px;
+  color: #e5eaf5;
+}
+
+.indicator-card p {
+  margin: 12px 0 0;
+  color: #aebbd0;
+  font-size: 11px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.indicator-card p b {
+  color: #d9e2f2;
+}
+
+.severity-badge {
+  flex-shrink: 0;
+  border-radius: 20px;
+  padding: 5px 9px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #293548;
+  color: #aebbd0;
+}
+
+.severity-high,
+.severity-critical {
+  background: #482630;
+  color: #ff899b;
+}
+
+.severity-medium {
+  background: #44351e;
+  color: #f5c06b;
+}
+
+.severity-low {
+  background: #153c32;
+  color: #62d6a9;
+}
+
+.report-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 13px;
+  margin-top: 8px;
+  background: #151e2d;
+  border: 1px solid #293548;
+  border-radius: 8px;
+  color: #bdc9dc;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.report-list-item svg {
+  flex-shrink: 0;
+  color: #8da6ff;
+  margin-top: 2px;
+}
+
+.report-empty {
+  padding: 14px;
+  background: #151e2d;
+  border: 1px solid #293548;
+  border-radius: 8px;
+  color: #8e9db3;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.report-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid #66502d;
+  border-radius: 8px;
+  background: #2a241b;
+  color: #f0c887;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.report-notice svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.report-entities,
+.report-metadata {
+  background: #151e2d;
+  border: 1px solid #293548;
+  border-radius: 9px;
+  padding: 5px 15px;
+}
+
+.entity-row,
+.report-metadata > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 13px 0;
+  border-bottom: 1px solid #293548;
+  font-size: 11px;
+}
+
+.entity-row:last-child,
+.report-metadata > div:last-child {
+  border-bottom: 0;
+}
+
+.entity-row strong,
+.report-metadata span {
+  flex-shrink: 0;
+  color: #8998ae;
+  font-weight: 500;
+}
+
+.entity-row span,
+.report-metadata strong {
+  color: #d5dfef;
+  text-align: right;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  .message-report {
+    padding: 17px;
+  }
+
+  .report-summary-grid {
+    gap: 9px;
+  }
+
+  .report-info-card {
+    padding: 12px;
+  }
+
+  .indicator-heading {
+    flex-wrap: wrap;
+  }
+
+  .entity-row,
+  .report-metadata > div {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .entity-row span,
+  .report-metadata strong {
+    text-align: left;
+  }
+}
+
+@media (max-width: 420px) {
+  .report-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Message Analyzer button sizing */
+
+.message-actions .primary-button {
+  width: fit-content;
+  min-width: max-content;
+  min-height: 42px;
+  padding: 0 20px;
+  white-space: nowrap;
+  gap: 9px;
+  margin-left: auto;
+}
+
+@media (max-width: 760px) {
+  .message-actions .primary-button {
+    width: 100%;
+    min-width: 0;
+    margin-left: 0;
+  }
+}

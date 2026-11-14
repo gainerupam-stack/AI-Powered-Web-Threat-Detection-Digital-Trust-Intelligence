@@ -110,17 +110,20 @@ function App() {
       }
 
       setUrlResult(result)
-
+  
       setReports((previous) => [
         {
           target: url.trim(),
           type: 'URL Scan',
           risk: result.risk,
           status: result.status,
-          date: 'Just now',
+          date: report.created_at || new Date().toISOString(),
+          reportId: report.report_id || null,
+          fullReport: report,
         },
         ...previous,
       ])
+
     } catch (error) {
       notify(error.message || 'Could not reach the backend.')
     } finally {
@@ -153,26 +156,27 @@ function App() {
       )
 
       const result = {
-        risk: report.risk_score ?? 0,
-        status:
-          report.risk_category ||
-          analysis.classification ||
-          'Inconclusive',
+        risk: report.risk_score ?? null,
+        status: report.risk_category || 'Inconclusive',
         indicators,
+        fullReport: report,
       }
 
       setMessageResult(result)
-
+      
       setReports((previous) => [
         {
           target: `${message.slice(0, 42)}${message.length > 42 ? '…' : ''}`,
           type: 'Message',
           risk: result.risk,
           status: result.status,
-          date: 'Just now',
+          date: report.created_at || new Date().toISOString(),
+          reportId: report.report_id || null,
+          fullReport: report,
         },
         ...previous,
       ])
+
     } catch (error) {
       notify(error.message || 'Could not reach the backend.')
     } finally {
@@ -481,12 +485,20 @@ function App() {
         <h2>Analyze a suspicious message</h2>
         <p>Paste an email, SMS or chat message for a live AI security assessment.</p>
 
-        <textarea
-          className="message-input"
-          value={message}
-          onChange={(event) => setMessage(event.target.value)}
-          placeholder="Paste the suspicious message here…"
-        />
+        
+      <textarea
+        className="message-input"
+        value={message}
+        onChange={(event) => setMessage(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+            event.preventDefault()
+            if (!scanning) runMessageScan()
+          }
+        }}
+        placeholder="Paste the suspicious message here…"
+      />
+
 
         <div className="message-actions">
           <span className="input-hint">
@@ -500,41 +512,190 @@ function App() {
         </div>
       </section>
 
-      {messageResult && (
-        <section className="panel result-panel">
-          <div className="result-header">
-            <div>
-              <span className="eyebrow">AI ANALYSIS RESULT</span>
-              <h2>{messageResult.status}</h2>
-            </div>
+
+  {messageResult && (() => {
+    const report = messageResult.fullReport || {}
+    const raw = report.findings?.ai_analysis?.raw || {}
+    const analysis = raw.message_analysis || {}
+    const extracted = raw.extracted_indicators || {}
+
+    const completed = raw.status === 'completed'
+    const indicators = Array.isArray(analysis.scam_indicators)
+      ? analysis.scam_indicators
+      : []
+    const recommendations = Array.isArray(analysis.recommendations)
+      ? analysis.recommendations
+      : []
+    const rationale = Array.isArray(report.rationale)
+      ? report.rationale
+      : []
+
+    const entities = [
+      ['URLs', extracted.urls],
+      ['Email addresses', extracted.emails],
+      ['Phone numbers', extracted.phone_numbers],
+    ]
+
+    const hasScore = typeof messageResult.risk === 'number'
+      && Number.isFinite(messageResult.risk)
+
+    const score = hasScore ? messageResult.risk : null
+
+    return (
+      <section className="panel result-panel message-report">
+        <div className="result-header">
+          <div>
+            <span className="eyebrow">AI INVESTIGATION REPORT</span>
+            <h2>Message Security Assessment</h2>
+          </div>
+          <RiskBadge status={messageResult.status} />
+        </div>
+
+        <div className="risk-score">
+          <div>
+            <span>Overall risk score</span>
+            <strong>
+              {hasScore ? score : 'N/A'}
+              {hasScore && <small>/100</small>}
+            </strong>
+          </div>
+          <div className="risk-meter">
+            <i style={{
+              width: `${hasScore ? Math.max(0, Math.min(100, score)) : 0}%`
+            }} />
+          </div>
+        </div>
+
+        <div className="report-summary-grid">
+          <div className="report-info-card">
+            <span>Overall classification</span>
             <RiskBadge status={messageResult.status} />
           </div>
-
-          <div className="risk-score">
-            <div>
-              <span>Risk score</span>
-              <strong>{messageResult.risk}<small>/100</small></strong>
-            </div>
-            <div className="risk-meter">
-              <i style={{ width: `${messageResult.risk}%` }} />
-            </div>
+          <div className="report-info-card">
+            <span>AI classification</span>
+            <RiskBadge status={analysis.classification || 'Unavailable'} />
           </div>
+          <div className="report-info-card">
+            <span>AI confidence</span>
+            <strong>{analysis.confidence || 'Unavailable'}</strong>
+          </div>
+          <div className="report-info-card">
+            <span>Analysis status</span>
+            <strong>{raw.status || 'Unavailable'}</strong>
+          </div>
+        </div>
 
-          <h3>Detected indicators</h3>
+        {completed && analysis.classification &&
+          report.risk_category &&
+          report.risk_category.toLowerCase() === 'inconclusive' && (
+            <div className="report-notice">
+              <AlertTriangle size={17} />
+              <span>
+                The overall assessment is Inconclusive, although
+                the AI returned {analysis.classification}.
+                These are separate backend classifications.
+              </span>
+            </div>
+          )}
 
-          {messageResult.indicators.length ? (
-            messageResult.indicators.map((indicator, index) => (
-              <div className="finding" key={index}>
-                <AlertTriangle size={17} /> {indicator}
+        <div className="report-section">
+          <h3>Executive Summary</h3>
+          <p className="report-description">
+            {analysis.summary || 'No executive summary was returned.'}
+          </p>
+        </div>
+
+        <div className="report-section">
+          <h3>Detected Scam Indicators</h3>
+
+          {indicators.length > 0 ? (
+            indicators.map((item, index) => (
+              <div className="indicator-card" key={index}>
+                <div className="indicator-heading">
+                  <strong>{item.indicator || 'Unnamed indicator'}</strong>
+                  <span className={`severity-badge severity-${String(
+                    item.severity || 'unknown'
+                  ).toLowerCase()}`}>
+                    {item.severity || 'Unknown'}
+                  </span>
+                </div>
+                <p>
+                  <b>Evidence:</b> {item.evidence || 'Not provided'}
+                </p>
               </div>
             ))
           ) : (
-            <div className="finding">
-              <CheckCircle2 size={17} /> No scam indicators detected.
+            <div className="report-empty">
+              {completed
+                ? 'No scam indicators were reported by the AI.'
+                : 'Indicator assessment is unavailable or incomplete.'}
             </div>
           )}
-        </section>
-      )}
+        </div>
+
+        <div className="report-section">
+          <h3>Risk-Scoring Rationale</h3>
+          {rationale.length > 0 ? (
+            rationale.map((reason, index) => (
+              <div className="report-list-item" key={index}>
+                <AlertTriangle size={15} />
+                <span>{reason}</span>
+              </div>
+            ))
+          ) : (
+            <div className="report-empty">
+              No risk-scoring rationale was provided.
+            </div>
+          )}
+        </div>
+
+        <div className="report-section">
+          <h3>Safety Recommendations</h3>
+          {recommendations.length > 0 ? (
+            recommendations.map((recommendation, index) => (
+              <div className="report-list-item" key={index}>
+                <ShieldCheck size={16} />
+                <span>{recommendation}</span>
+              </div>
+            ))
+          ) : (
+            <div className="report-empty">
+              No recommendations were returned.
+            </div>
+          )}
+        </div>
+
+        <div className="report-section">
+          <h3>Extracted Entities</h3>
+          <div className="report-entities">
+            {entities.map(([label, values]) => (
+              <div className="entity-row" key={label}>
+                <strong>{label}</strong>
+                <span>
+                  {Array.isArray(values) && values.length > 0
+                    ? values.join(', ')
+                    : completed && Array.isArray(values)
+                      ? 'None detected'
+                      : 'Unavailable'}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="report-section">
+          <h3>Report Metadata</h3>
+          <div className="report-metadata">
+            <div><span>Report ID</span><strong>{report.report_id || 'Unavailable'}</strong></div>
+            <div><span>Created at</span><strong>{report.created_at ? new Date(report.created_at).toLocaleString() : 'Unavailable'}</strong></div>
+            <div><span>Revision</span><strong>{report.revision ?? 'Unavailable'}</strong></div>
+            <div><span>Report hash</span><strong>{report.report_hash || 'Unavailable'}</strong></div>
+          </div>
+        </div>
+      </section>
+    )
+  })()}
+
     </>
   )
 
